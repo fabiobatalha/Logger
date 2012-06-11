@@ -45,13 +45,19 @@ def registering_log(line,date_log):
   """
     Register the log access acording to the ALLOWED_PATTERNS
   """
-  finded = re.findall('GET \/scielobooks\/[a-z]*\/pdf',line)
+  finded = re.findall('GET \/scielobooks\/[a-z0-9]*\/pdf',line)
   if finded:
     code = finded[0].replace('GET /scielobooks/','').replace('/pdf','')
-    print code
-    analytics.update({"site":COLLECTION_DOMAIN},{"$inc":{'dwn_'+date_log:1,'dwn_total':1}},True)
-    analytics.update({"code":code}, {"$set":{'type':'book'},"$inc":{'dwn':1,'dwn_'+date_log:1}},True)
-    #analytics.update({"serial":issn}, {"$inc":{'total':1,"dwn_"+dat:1}},True)
+    analytics.update({"site":COLLECTION_DOMAIN},{"$inc":{'pdf_'+date_log:1,'pdf_total':1}},True)
+    analytics.update({"code":code}, {"$set":{'type':'book'},"$inc":{'pdf':1,'pdf_'+date_log:1}},True)
+    #analytics.update({"serial":issn}, {"$inc":{'total':1,"pdf_"+dat:1}},True)
+ 
+  finded2=re.findall('GET \/id\/[a-z0-9]*\/epub',string)
+  if finded2:
+    code =finded2[0].replace('GET /id/','').replace('/epub','')
+    analytics.update({"site":COLLECTION_DOMAIN},{"$inc":{'epb_'+date_log:1,'epb_total':1}},True)
+    analytics.update({"code":code}, {"$set":{'type':'book'},"$inc":{'epb':1,'epb_'+date_log:1}},True)
+    #analytics.update({"serial":issn}, {"$inc":{'total':1,"epb_"+dat:1}},True)
 
 conn = Connection(MONGODB_DOMAIN, MONGODB_PORT)
 
