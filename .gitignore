@@ -1,4 +1,6 @@
 *.pyc
+*.out
+data/
 nbproject
 analytics-env/
 logaccess_config.py
