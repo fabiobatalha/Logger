@@ -3,6 +3,8 @@
 import urllib2
 import datetime
 
+from xylose.scielodocument import Journal
+
 from mocker import ANY, MockerTestCase
 
 from logger.accesschecker import AccessChecker, TimedSet, checkdatelock
@@ -11,6 +13,7 @@ from . import fixtures
 
 
 class TimedSetTests(MockerTestCase):
+
     def test_expiration(self):
         ts = TimedSet(expired=checkdatelock)
         ts.add('art1', '2013-05-29T00:01:01')
@@ -56,6 +59,31 @@ class AccessQueueTests(MockerTestCase):
 
 
 class AccessCheckerTests(MockerTestCase):
+
+    def setUp(self):
+        bjmbr = {
+            'v930': [{'_': 'BJMBR'}],
+            'v10': [{'_': 'bjmbr'}],
+            'v68': [{'_': 'bjmbr'}],
+            'v935': [{'_': '1414-431X'}],
+            'v992': [{'_': 'scl'}],
+            'v400': [{'_': '0100-879X'}],
+            'v100': [{'_': 'Brazilian Journal of Medical and Biological Research'}],
+            'v35': [{'_': 'ONLIN'}]
+        }
+
+        zool = {
+            'v930': [{'_': 'ZOOL'}],
+            'v10': [{'_': 'zool'}],
+            'v68': [{'_': 'zool'}],
+            'v935': [{'_': '1984-4670'}],
+            'v992': [{'_': 'scl'}],
+            'v400': [{'_': '1984-4670'}],
+            'v100': [{'_': 'Zoologia (Curitiba)'}],
+            'v35': [{'_': 'PRINT'}]
+            }
+
+        self.journals = {'zool': Journal(zool), 'bjmbr': Journal(bjmbr)}
 
     def test_instanciatingAccessChecker(self):
         mock_urllib2 = self.mocker.replace("urllib2")
@@ -127,9 +155,11 @@ class AccessCheckerTests(MockerTestCase):
 
         self.mocker.replay()
 
-        self.assertEqual(AccessChecker(collection='scl').acronym_to_issn_dict, {u'bjmbr': u'0100-879X', u'zool': u'1984-4670'})
+        result = AccessChecker(collection='scl').acronym_to_journal_dict
+        self.assertEqual(result['bjmbr'].scielo_issn, u'0100-879X')
+        self.assertEqual(result['zool'].scielo_issn, u'1984-4670')
 
-    def test_instanciatingAccessChecker_acronym_to_issn_dict_exception(self):
+    def test_instanciatingAccessChecker_acronym_to_journal_dict_exception(self):
         mock_urllib2 = self.mocker.replace("urllib2")
 
         mock_urllib2.urlopen(ANY, timeout=3).read()
@@ -160,8 +190,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -175,8 +205,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -190,8 +220,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -205,8 +235,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -220,8 +250,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -235,8 +265,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result(['scl', 'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
@@ -253,8 +283,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result(['scl', 'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -272,8 +302,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -291,8 +321,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -334,8 +364,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -349,8 +379,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -364,8 +394,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -379,8 +409,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -394,8 +424,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -409,8 +439,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -424,8 +454,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -439,8 +469,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -458,8 +488,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -473,8 +503,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -486,8 +516,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -499,138 +529,141 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_arttext', '1414-431X2012000100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_arttext', '0100-879X2012000100001'), True)
 
     def test_pid_is_valid_script_sci_arttext_valid_pid_fbpe(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_arttext', '1414-431X(12)00100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_arttext', '0100-879X(12)00100001'), True)
 
     def test_pid_is_valid_script_sci_abstract_invalid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_abstract', '1414-431X201200100001'), None)
+        self.assertEqual(ac._is_valid_html_request('sci_abstract', '0100-879X201200100001'), None)
 
     def test_pid_is_valid_script_sci_abstract_valid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_abstract', '1414-431X2012000100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_abstract', '0100-879X2012000100001'), True)
 
     def test_pid_is_valid_script_sci_abstract_valid_pid_fbpe(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_abstract', '1414-431X(12)00100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_abstract', '0100-879X(12)00100001'), True)
 
     def test_pid_is_valid_script_sci_pdf_invalid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_pdf', '1414-431X9012000100001'), None)
+        self.assertEqual(ac._is_valid_html_request('sci_pdf', '0100-879X9012000100001'), None)
 
     def test_pid_is_valid_script_sci_pdf_valid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_pdf', '1414-431X2012000100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_pdf', '0100-879X2012000100001'), True)
 
     def test_pid_is_valid_script_sci_pdf_valid_pid_fbpe(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_pdf', '1414-431X(12)00100001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_pdf', '0100-879X(12)00100001'), True)
 
     def test_pid_is_valid_script_sci_serial_valid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_serial', '1414-431X'), True)
+        self.assertEqual(
+            ac._is_valid_html_request('sci_serial', '0100-879X'),
+            True
+        )
 
     def test_pid_is_valid_script_sci_issuetoc_valid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        self.assertEqual(ac._is_valid_html_request('sci_issuetoc', '1414-431X20120001'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_issuetoc', '0100-879X20120001'), True)
 
     def test_pid_is_valid_script_sci_issuetoc_invalid_pid(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -642,20 +675,20 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
-        self.assertEqual(ac._is_valid_html_request('sci_issues', '1414-431X'), True)
+        self.assertEqual(ac._is_valid_html_request('sci_issues', '0100-879X'), True)
 
     def test_pid_is_valid_pdf_request(self):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -669,8 +702,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -684,8 +717,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -699,8 +732,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -714,24 +747,24 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        line = '187.19.211.179 - - [30/May/2013:00:01:01 -0300] "GET http://www.scielo.br/scielo.php?pid=S1414-431X2000000300007&script=sci_arttext HTTP/1.1" 200 25084 "-" "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"'
+        line = '187.19.211.179 - - [30/May/2013:00:01:01 -0300] "GET http://www.scielo.br/scielo.php?pid=S0100-879X2000000300007&script=sci_arttext HTTP/1.1" 200 25084 "-" "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"'
 
         expected = {
                         'ip': '187.19.211.179',
-                        'code': 'S1414-431X2000000300007',
+                        'code': 'S0100-879X2000000300007',
                         'access_type': 'HTML',
                         'iso_date': '2013-05-30',
                         'iso_datetime': '2013-05-30T00:01:01',
                         'year': '2013',
                         'query_string': {
-                            'pid': 'S1414-431X2000000300007',
+                            'pid': 'S0100-879X2000000300007',
                             'script': 'sci_arttext'
                         },
                         'day': '30',
@@ -745,14 +778,14 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
         ac = AccessChecker(collection='scl')
 
-        line = '187.19.211.179 - - [30/May/2013:00:01:01 -0300] "GET http://www.scielo.br/scielo.php?pid=S1414-431X2000000300007 HTTP/1.1" 200 25084 "-" "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"'
+        line = '187.19.211.179 - - [30/May/2013:00:01:01 -0300] "GET http://www.scielo.br/scielo.php?pid=S0100-879X2000000300007 HTTP/1.1" 200 25084 "-" "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)"'
 
         self.assertEqual(ac.parsed_access(line), None)
 
@@ -760,8 +793,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -775,8 +808,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -790,8 +823,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -809,7 +842,7 @@ class AccessCheckerTests(MockerTestCase):
                         'day': '30',
                         'month': '05',
                         'query_string': None,
-                        'pdf_issn': u'1414-431X',
+                        'pdf_issn': u'0100-879X',
                         'script': '',
                         'pdf_path': '/pdf/bjmbr/v29n4/18781.pdf'
                     }
@@ -821,8 +854,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -840,7 +873,7 @@ class AccessCheckerTests(MockerTestCase):
                         'day': '30',
                         'month': '05',
                         'query_string': None,
-                        'pdf_issn': u'1414-431X',
+                        'pdf_issn': u'0100-879X',
                         'script': '',
                         'pdf_path': '/pdf/bjmbr/v14n4/03.pdf'
                     }
@@ -851,8 +884,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 
@@ -866,8 +899,8 @@ class AccessCheckerTests(MockerTestCase):
         accesschecker = self.mocker.patch(AccessChecker)
         accesschecker._allowed_collections()
         self.mocker.result([u'scl', u'arg'])
-        accesschecker._acronym_to_issn_dict()
-        self.mocker.result({u'zool': u'1984-4670', u'bjmbr': u'1414-431X'})
+        accesschecker._acronym_to_journal_dict()
+        self.mocker.result(self.journals)
 
         self.mocker.replay()
 

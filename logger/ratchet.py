@@ -41,21 +41,24 @@ class RatchetQueue(object):
         if 'issue' in kwargs:
             qs.append("issue={0}".format(kwargs['issue']))
 
+        if 'language' in kwargs:
+            qs.append("language={0}".format(kwargs['language']))
+
         qrs = "&".join(qs)
         url = "{0}/api/v1/{1}?{2}".format(self._api_url, kwargs['endpoint'], qrs)
 
         self._request(url)
 
-    def register_download_access(self, code, issn, access_date):
+    def register_download_access(self, code, issn, access_date, language):
         page = 'download'
         code = code.upper()
         issn = issn.upper()
         # Register PDF direct download access
-        self._prepare_url(endpoint='general', code=code, access_date=access_date, page=page, type_doc='download')
+        self._prepare_url(endpoint='general', code=code, access_date=access_date, page=page, type_doc='download', language=language)
         # Register PDF direct download access for a specific journal register
-        self._prepare_url(endpoint='general', code=issn, access_date=access_date, page=page, type_doc='journal')
+        self._prepare_url(endpoint='general', code=issn, access_date=access_date, page=page, type_doc='journal', language=language)
         # Register PDF direct download access for a collection register
-        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page)
+        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page, language=language)
 
     def register_journal_access(self, code, access_date):
         page = 'journal'
@@ -65,15 +68,15 @@ class RatchetQueue(object):
         # Register access inside collection record for page sci_serial
         self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page)
 
-    def register_article_access(self, code, access_date):
+    def register_article_access(self, code, access_date, language):
         page = 'fulltext'
         code = code.upper()
         # Register access for a specific article
-        self._prepare_url(endpoint='general', code=code, access_date=access_date, journal=code[1:10], issue=code[1:18], page=page, type_doc='article')
+        self._prepare_url(endpoint='general', code=code, access_date=access_date, journal=code[1:10], issue=code[1:18], page=page, type_doc='article', language=language)
         # Register access inside journal record for page sci_arttext
-        self._prepare_url(endpoint='general', code=code[1:10], access_date=access_date, page=page, type_doc='journal')
+        self._prepare_url(endpoint='general', code=code[1:10], access_date=access_date, page=page, type_doc='journal', language=language)
         # Register access inside collection record for page sci_arttext
-        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page)
+        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page, language=language)
 
     def register_abstract_access(self, code, access_date):
         page = 'abstract'
@@ -85,15 +88,15 @@ class RatchetQueue(object):
         # Register access inside collection record for page sci_abstract
         self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page)
 
-    def register_pdf_access(self, code, access_date):
+    def register_pdf_access(self, code, access_date, language):
         page = 'pdf'
         code = code.upper()
         # Register access for a specific article
-        self._prepare_url(endpoint='general', code=code, access_date=access_date, journal=code[1:10], issue=code[1:18], page=page, type_doc='article')
+        self._prepare_url(endpoint='general', code=code, access_date=access_date, journal=code[1:10], issue=code[1:18], page=page, type_doc='article', language=language)
         # Register access inside journal record for page pdf
-        self._prepare_url(endpoint='general', code=code[1:10], access_date=access_date, page=page, type_doc='journal')
+        self._prepare_url(endpoint='general', code=code[1:10], access_date=access_date, page=page, type_doc='journal', language=language)
         # Register access inside collection record for page pdf
-        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page)
+        self._prepare_url(endpoint='general', code='WEBSITE', access_date=access_date, page=page, language=language)
 
     def register_toc_access(self, code, access_date):
         page = 'toc'

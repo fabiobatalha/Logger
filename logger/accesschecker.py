@@ -7,6 +7,8 @@ import datetime
 import urlparse
 import re
 
+from xylose.scielodocument import Journal
+
 from logaccess_config import *
 import apachelog
 
@@ -43,8 +45,8 @@ class AccessChecker(object):
             raise ValueError('Invalid collection id ({0}), you must select one of these {1}'.format(collection, str(allowed_collections)))
 
         self.collection = collection
-        self.acronym_to_issn_dict = self._acronym_to_issn_dict()
-        self.allowed_issns = self._allowed_issns(self.acronym_to_issn_dict)
+        self.acronym_to_journal_dict = self._acronym_to_journal_dict()
+        self.allowed_issns = self._allowed_issns(self.acronym_to_journal_dict)
 
     def _allowed_collections(self):
         allowed_collections = []
@@ -60,7 +62,7 @@ class AccessChecker(object):
 
         return allowed_collections
 
-    def _acronym_to_issn_dict(self):
+    def _acronym_to_journal_dict(self):
         """
         Create a acronym dictionay with valid issns. The issn's are the issn's
         used as id in the SciELO Website.
@@ -68,22 +70,23 @@ class AccessChecker(object):
         query_url = '{0}/api/v1/journal?collection={1}'.format(ARTICLE_META_URL, self.collection)
 
         try:
-            titles_json = urllib2.urlopen(query_url, timeout=3).read()
+            journals_json = urllib2.urlopen(query_url, timeout=3).read()
         except urllib2.URLError:
             raise urllib2.URLError('Was not possible to connect to webservices.scielo.org, try again later!')
 
-        titles = json.loads(titles_json)
+        journals = json.loads(journals_json)
 
-        title_dict = {}
-        for title in titles:
-            title_dict[title['v68'][0]['_']] = title['v400'][0]['_']
+        journal_dict = {}
+        for journal in journals:
+            jrnl = Journal(journal)
+            journal_dict[jrnl.acronym] = jrnl
 
-        return title_dict
+        return journal_dict
 
-    def _allowed_issns(self, acronym_to_issn):
+    def _allowed_issns(self, acronym_to_journal):
         issns = []
-        for issn in acronym_to_issn.values():
-            issns.append(issn)
+        for journal in acronym_to_journal.values():
+            issns.append(journal.scielo_issn)
 
         return issns
 
@@ -106,7 +109,7 @@ class AccessChecker(object):
         except IndexError:
             return None
 
-        qs = dict((k,v[0]) for k,v in urlparse.parse_qs(urlparse.urlparse(url).query).items())
+        qs = dict((k, v[0]) for k, v in urlparse.parse_qs(urlparse.urlparse(url).query).items())
 
         if len(qs) > 0:
             return qs
@@ -173,7 +176,7 @@ class AccessChecker(object):
             return None
 
         try:
-            data['pdf_issn'] = self.acronym_to_issn_dict[data['pdf_path'].split('/')[2]]
+            data['pdf_issn'] = self.acronym_to_journal_dict[data['pdf_path'].split('/')[2]].scielo_issn
         except (KeyError, IndexError):
             return None
 
